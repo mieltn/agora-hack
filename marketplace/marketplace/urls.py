@@ -20,4 +20,7 @@ from main import views as mv
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', mv.index, name="index"),
+    path('api/product/', mv.newProduct, name="newproduct"),
+    path('api/category/', mv.newCategory, name="category"),
+    path('api/measureunit/', mv.newMeasureUnit, name="measureunit"),
 ]
