@@ -1,0 +1,11 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div style="">
+    <h1>main page to get data from ERP</h1>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="getxml" value="getxml">get xml</button>
+    </form>
+</div>
+{% endblock %}
