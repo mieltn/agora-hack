@@ -7,7 +7,7 @@ import json
 # Create your views here.
 def index(request):
     if request.method == "POST":
-        response = requests.get("http://localhost:1234")
-        return JsonResponse(json.dumps(response))
+        response = requests.get("http://127.0.0.1:1234/api")
+        return JsonResponse(response.json(), json_dumps_params={'ensure_ascii': False})
     else:
         return render(request, "main/index.html", {})
