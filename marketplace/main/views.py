@@ -20,7 +20,7 @@ def newCategory(request):
     if request.method == "POST":
         data = json.loads(request.body)
         try:
-            parent = Category.objects.get(parent=data['Родитель'])
+            parent = Category.objects.get(reflink=data['Родитель'])
         except:
             parent = None
 
