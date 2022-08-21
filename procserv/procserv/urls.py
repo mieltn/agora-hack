@@ -15,9 +15,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from main.views import XMLget
+from main.views import XMLexchange
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', XMLget.as_view(), name="xmlget"),
+    path('api/', XMLexchange.as_view(), name="xmlexchange"),
 ]

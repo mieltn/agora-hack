@@ -3,9 +3,10 @@ import json
 from pprint import pprint
 
 def main():
-    with open("main/case_3_input.xml", "r", encoding="utf-8") as f:
+    with open("main/case_2_input_data.xml", "r", encoding="utf-8") as f:
         o = f.read()
-        # print(type(o))
+        print(type(o))
+        print(o)
         data = xmltodict.parse(o)
         j = json.dumps(data, ensure_ascii=False)
         # print(j)
