@@ -1,0 +1,7 @@
+django
+django-mptt
+djangorestframework
+psycopg2
+pymongo
+requests
+xmltodict

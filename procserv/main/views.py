@@ -3,7 +3,6 @@ from django.http import JsonResponse
 import requests
 import json
 import xmltodict
-from pprint import pprint
 import pymongo
 from bson import json_util
 

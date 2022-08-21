@@ -84,9 +84,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'marketplace', 
         'USER': 'postgres', 
-        'PASSWORD': 'postgres4me',
+        'PASSWORD': 'secretpassword',
         'HOST': '127.0.0.1', 
-        'PORT': '49668',
+        'PORT': '5432',
     }
 }
 
