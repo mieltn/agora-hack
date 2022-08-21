@@ -15,9 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from main.views import XMLexchange
+from main.views import XMLstore, dataGet
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', XMLexchange.as_view(), name="xmlexchange"),
+    path('api/store/', XMLstore.as_view(), name="xmlstore"),
+    path('api/dataget/', dataGet.as_view(), name="dataget"),
 ]

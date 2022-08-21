@@ -10,7 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 def index(request):
     if request.method == "POST":
-        response = requests.get("http://127.0.0.1:1234/api")
+        response = requests.get("http://127.0.0.1:1234/api/dataget/")
         return JsonResponse(response.json(), json_dumps_params={'ensure_ascii': False})
     else:
         return render(request, "main/index.html", {})
@@ -21,18 +21,18 @@ def newCategory(request):
     if request.method == "POST":
         data = json.loads(request.body)
         try:
-            parent = Category.objects.get(parentref=data['Родитель'])
+            parent = Category.objects.get(parent=data['Родитель'])
         except:
             parent = None
 
         newcat = Category(
             parent = parent,
             name = data['Наименование'],
-            reflink = data['Ссылка'],
-            parentref = data['Родитель']
+            reflink = data['Ссылка']
+            # parentref = data['Родитель']
         )
         newcat.save()
-
+        print(newcat.pk)
         # return HttpResponseRedirect(reverse('index'))
         return JsonResponse(data)
 
@@ -54,7 +54,7 @@ def newMeasureUnit(request):
 def newProduct(request):
     data = json.loads(request.body)
     try:
-        category = Category.objects.get(parentref=data['Родитель'])
+        category = Category.objects.get(reflink=data['Родитель'])
     except:
         category = None
 
@@ -75,7 +75,7 @@ def newProduct(request):
         measure_unit = mu,
         hidden = data['ПометкаУдаления'],
         reflink = data['Ссылка'],
-        parentref = data['Родитель'],
+        # parentref = data['Родитель'],
         
     )
     product.save()
