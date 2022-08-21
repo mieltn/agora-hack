@@ -10,7 +10,7 @@
 
 Для установки библиотек необходимо выполнить:
 
-`pip install -r requirements.txt --no-dir-cache`
+`pip install -r requirements.txt --no-cache-dir`
 
 Для работы проекта нужны следующие сервисы:
 1. бд маркетплейса - postgres, запускать проще из контейнера postgres
@@ -36,6 +36,10 @@
 
 ### Маркетплейс
 Из папки marketplace выполнить
+
+`python3 manage.py makemigrations`
+
+`python3 manage.py migrate`
 
 `python3 manage.py runserver`
 

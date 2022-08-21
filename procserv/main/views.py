@@ -24,18 +24,15 @@ class XMLstore(APIView):
 
         if 'ГруппаНоменклатура' in body:
             col_handle = db_handle['category']
-            col_handle.drop()
             for item in body['ГруппаНоменклатура']:
                 col_handle.insert_one(item)
                 
         if 'ЕдиницыИзмерения' in body:
-            col_handle.drop()
             col_handle = db_handle['measureunit']
             item = body['ЕдиницыИзмерения']['Строка']
             col_handle.insert_one(item)
                 
         if 'Номенклатура' in body:
-            col_handle.drop()
             col_handle = db_handle['product']
             for item in body['Номенклатура']:
                 col_handle.insert_one(item)
@@ -47,14 +44,11 @@ class dataGet(APIView):
 
     def get(self, request):
 
-        print("entering get...")
-
         db_handle = get_db_handle()
 
         col_handle = db_handle['category']
 
         for item in col_handle.find():
-            print(item)
             r = requests.post(
                 "http://127.0.0.1:8000/api/category/",
                 data=json_util.dumps(item)
