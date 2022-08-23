@@ -7,12 +7,7 @@ from mptt.models import MPTTModel
 class Category(MPTTModel):
     parent = TreeForeignKey('self', blank=True, null=True, verbose_name='Родительская категория', related_name='child', on_delete=models.CASCADE)
     name = models.CharField(max_length=550)
-
     reflink = models.CharField(max_length=50, primary_key=True)
-    # parentref = models.CharField(max_length=50)
-
-    # def __str__(self):
-    #     return self.tree_id
     
     class Meta:
         verbose_name = 'Категория товаров'
@@ -23,7 +18,6 @@ class Category(MPTTModel):
 class MeasureUnit(models.Model):
     name = models.CharField(max_length=255, verbose_name='Название')
     full_name = models.CharField(max_length=255, blank=True, default='',verbose_name='Полное название')
-
     reflink = models.CharField(max_length=50, primary_key=True)
 
     class Meta:
@@ -51,9 +45,7 @@ class Product(models.Model):
     rate_nds = models.FloatField(default=20, verbose_name='Ставка НДС')
     measure_unit = models.ForeignKey(MeasureUnit, null=True, blank=True, verbose_name='Единица измерения', on_delete=models.SET_NULL)
     hidden = models.BooleanField(default=False, verbose_name='Скрывать товар в Agora', db_index=True)
-
     reflink = models.CharField(max_length=50, primary_key=True)
-    # parentref = models.CharField(max_length=50)
 
     class Meta:
         verbose_name = 'Товар'

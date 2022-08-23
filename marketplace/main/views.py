@@ -1,3 +1,4 @@
+from doctest import DocFileSuite
 from django.shortcuts import render
 from django.http import JsonResponse
 import requests
@@ -18,65 +19,48 @@ def index(request):
 @csrf_exempt
 def newCategory(request):
     if request.method == "POST":
-        data = json.loads(request.body)
-        try:
-            parent = Category.objects.get(reflink=data['Родитель'])
-        except:
-            parent = None
+        item = json.loads(request.body)
 
-        newcat = Category(
-            parent = parent,
-            name = data['Наименование'],
-            reflink = data['Ссылка']
-            # parentref = data['Родитель']
+        try:
+            parent = Category.objects.get(reflink=item['parent'])
+        except Category.DoesNotExist:
+            parent = None
+            
+        ct, created = Category.objects.get_or_create(
+            reflink = item['reflink'],
+            name = item['name'],
+            parent = parent
         )
-        newcat.save()
-        print(newcat.pk)
-        # return HttpResponseRedirect(reverse('index'))
-        return JsonResponse(data)
+        if created: ct.save()
+        return JsonResponse({'ct': ct.reflink})
 
 
 @csrf_exempt
 def newMeasureUnit(request):
-    data = json.loads(request.body)
-    newmu = MeasureUnit(
-        name = data['Наименование'],
-        full_name = data['НаименованиеПолное'],
-        reflink = data['Ссылка']
+    item = json.loads(request.body)
+    mu, created = MeasureUnit.objects.get_or_create(
+        reflink = item['reflink'],
+        name = item['name'],
+        full_name = item['full_name']
     )
-    newmu.save()
-    # return HttpResponseRedirect(reverse('index'))
-    return JsonResponse(data)
+    if created: mu.save()
+    return JsonResponse({'mu': mu.reflink})
 
 
 @csrf_exempt
 def newProduct(request):
-    data = json.loads(request.body)
-    try:
-        category = Category.objects.get(reflink=data['Родитель'])
-    except:
-        category = None
+    item = json.loads(request.body)
 
-    mu = MeasureUnit.objects.get(reflink=data['ЕдиницаХраненияОстатков'])
-
-    if data['ТипНоменклатуры'] == 'Товар':
-        pt = 0
-    elif data['ТипНоменклатуры'] == 'Услуга':
-        pt = 1
-
-    product = Product(
-        category = category,
-        code = data['Артикул'],
-        name = data['Наименование'],
-        description = data['Описание'],
-        product_type = pt,
-        rate_nds = int(re.sub('%', '', data['СтавкаНДС'])),
-        measure_unit = mu,
-        hidden = data['ПометкаУдаления'],
-        reflink = data['Ссылка'],
-        # parentref = data['Родитель'],
-        
+    pr, created = Product.objects.get_or_create(
+        reflink = item['reflink'],
+        category_id = item['category'],
+        code = item['code'],
+        name = item['name'],
+        description = item['description'],
+        product_type = item['product_type'],
+        rate_nds = item['rate_nds'],
+        measure_unit_id = item['measure_unit'],
+        hidden = item['hidden']        
     )
-    product.save()
-    # return HttpResponseRedirect(reverse('index'))
-    return JsonResponse(data)
+    if created: pr.save()
+    return JsonResponse({'pr': pr.reflink})

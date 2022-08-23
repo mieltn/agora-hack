@@ -9,8 +9,8 @@ def XMLsend(filename):
 
 
 if __name__ == "__main__":
-    filename = "case_3_input_data.xml"
-    print(f'sending xml named "{filename}" in 5 seconds...')
-    time.sleep(5)
+    filename = "case_2_input_big_data.xml"
+    print(f'sending xml named "{filename}" in 2 seconds...')
+    time.sleep(2)
     print("sending...")
     XMLsend(filename)

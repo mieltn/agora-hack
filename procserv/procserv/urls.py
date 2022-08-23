@@ -15,10 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from main.views import XMLstore, dataGet
+from main.views import storeXML, loadToMP
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/store/', XMLstore.as_view(), name="xmlstore"),
-    path('api/dataget/', dataGet.as_view(), name="dataget"),
+    path('api/store/', storeXML.as_view(), name="storexml"),
+    path('api/dataget/', loadToMP.as_view(), name="loadtomp"),
 ]

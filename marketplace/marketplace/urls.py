@@ -22,5 +22,5 @@ urlpatterns = [
     path('', mv.index, name="index"),
     path('api/product/', mv.newProduct, name="newproduct"),
     path('api/category/', mv.newCategory, name="category"),
-    path('api/measureunit/', mv.newMeasureUnit, name="measureunit"),
+    path('api/measure_unit/', mv.newMeasureUnit, name="measureunit"),
 ]
