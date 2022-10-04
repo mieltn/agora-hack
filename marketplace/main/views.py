@@ -1,66 +1,51 @@
-from doctest import DocFileSuite
-from django.shortcuts import render
+from rest_framework.views import APIView
+from rest_framework import status
 from django.http import JsonResponse
+
+from .serializers import ProductSerializer, CategorySerializer, MeasureUnitSerializer
+
+import os
 import requests
-import json
-import re
-from .models import Product, Category, MeasureUnit
-from django.views.decorators.csrf import csrf_exempt
 
 
-def index(request):
-    if request.method == "POST":
-        response = requests.get("http://127.0.0.1:1234/api/dataget/")
-        return JsonResponse(response.json(), json_dumps_params={'ensure_ascii': False})
-    else:
-        return render(request, "main/index.html", {})
+class Upload(APIView):
 
+    URL = 'http://0.0.0.0:2000'
 
-@csrf_exempt
-def newCategory(request):
-    if request.method == "POST":
-        item = json.loads(request.body)
-
-        try:
-            parent = Category.objects.get(reflink=item['parent'])
-        except Category.DoesNotExist:
-            parent = None
-            
-        ct, created = Category.objects.get_or_create(
-            reflink = item['reflink'],
-            name = item['name'],
-            parent = parent
+    def get(self, request):
+        response = requests.get(URL)
+        return JsonResponse(
+            status = status.HTTP_200_OK
         )
-        if created: ct.save()
-        return JsonResponse({'ct': ct.reflink})
+
+class Products(APIView):
+
+    def post(self, request):
+        serializer = ProductSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+
+        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@csrf_exempt
-def newMeasureUnit(request):
-    item = json.loads(request.body)
-    mu, created = MeasureUnit.objects.get_or_create(
-        reflink = item['reflink'],
-        name = item['name'],
-        full_name = item['full_name']
-    )
-    if created: mu.save()
-    return JsonResponse({'mu': mu.reflink})
+class Categories(APIView):
+
+    def post(self, request):
+        serializer = CategorySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+            
+        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@csrf_exempt
-def newProduct(request):
-    item = json.loads(request.body)
+class MeasureUnits(APIView):
 
-    pr, created = Product.objects.get_or_create(
-        reflink = item['reflink'],
-        category_id = item['category'],
-        code = item['code'],
-        name = item['name'],
-        description = item['description'],
-        product_type = item['product_type'],
-        rate_nds = item['rate_nds'],
-        measure_unit_id = item['measure_unit'],
-        hidden = item['hidden']        
-    )
-    if created: pr.save()
-    return JsonResponse({'pr': pr.reflink})
+    def post(self, request):
+        serializer = MeasureUnitSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+            
+        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

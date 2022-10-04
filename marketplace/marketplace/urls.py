@@ -15,12 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from main import views as mv
+from main.views import Upload, Products, Categories, MeasureUnits
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', mv.index, name="index"),
-    path('api/product/', mv.newProduct, name="newproduct"),
-    path('api/category/', mv.newCategory, name="category"),
-    path('api/measure_unit/', mv.newMeasureUnit, name="measureunit"),
+    path('upload/', Products.as_view()),
+    path('products/', Products.as_view()),
+    path('categories/', Categories.as_view()),
+    path('measureunits/', MeasureUnits.as_view()),
 ]
