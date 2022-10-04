@@ -4,7 +4,6 @@ from django.http import JsonResponse
 
 from .serializers import ProductSerializer, CategorySerializer, MeasureUnitSerializer
 
-import os
 import requests
 
 
@@ -13,8 +12,9 @@ class Upload(APIView):
     URL = 'http://0.0.0.0:2000/senddata/'
 
     def get(self, request):
-        response = requests.get(URL)
+        response = requests.get(self.URL)
         return JsonResponse(
+            response.json(),
             status = status.HTTP_200_OK
         )
 

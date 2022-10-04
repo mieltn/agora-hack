@@ -19,7 +19,7 @@ from main.views import Upload, Products, Categories, MeasureUnits
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('upload/', Products.as_view()),
+    path('upload/', Upload.as_view()),
     path('products/', Products.as_view()),
     path('categories/', Categories.as_view()),
     path('measureunits/', MeasureUnits.as_view()),

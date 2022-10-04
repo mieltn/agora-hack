@@ -8,6 +8,8 @@ import re
 
 import requests
 
+import time
+
 from .utils import getDBHandle
 
 
@@ -111,6 +113,8 @@ class UploadXML(APIView):
 
         result = {}
 
+        startTime = time.time()
+
         if 'ГруппаНоменклатура' in body:
             data = body['ГруппаНоменклатура']
             parsed = self.parseCategory(data)
@@ -129,6 +133,9 @@ class UploadXML(APIView):
             cnt = self.toMongo(parsed, 'products')
             result['products received'] = cnt
 
+        timeDiff = time.time() - startTime
+        result['total seconds'] = round(timeDiff, 2)
+
         return JsonResponse(result, status=status.HTTP_200_OK)
 
 
@@ -138,18 +145,18 @@ class SendData(APIView):
 
     def send(self, col):
         colHandle = self.DBHandle[col]
-        docs = colHandle.find({'sent': 0})
+        docs = list(colHandle.find({'sent': 0}))
 
-        # if len(list(docs)) == 0:
-        #     return {'status': 304}
+        if len(docs) == 0:
+            return {'status': status.HTTP_304_NOT_MODIFIED}
 
         for item in docs:
             response = requests.post(
-                f'http://127.0.0.1:3000/{col}/',
+                'http://127.0.0.1:3000/{}/'.format(col),
                 data = json_util.dumps(item),
                 headers = {'Content-Type': 'application/json'}
             )
-            if response.status_code != status.HTTP_200_OK:
+            if response.status_code != status.HTTP_201_CREATED:
                 return {'response': response.text, 'status': status.HTTP_400_BAD_REQUEST}
 
             colHandle.update_one(
@@ -157,15 +164,20 @@ class SendData(APIView):
                 {'$set': {'sent': 1}}
             )
         
-        return {'status': status.HTTP_200_OK}
+        return {'items uploaded': len(docs), 'status': status.HTTP_200_OK}
 
 
     def get(self, request):
+
+        startTime = time.time()
 
         response = {
             'category': self.send('categories'),
             'measureunit': self.send('measureunits'),
             'product': self.send('products')
         }
+
+        timeDiff = time.time() - startTime
+        response['total seconds'] = round(timeDiff, 2)
     
         return JsonResponse(response)
