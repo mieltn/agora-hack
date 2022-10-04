@@ -1,64 +1,71 @@
 from rest_framework.views import APIView
+from rest_framework import status
 from django.http import JsonResponse
-import requests
+
 import xmltodict
 from bson import json_util
 import re
-from .utils import get_db_handle
 
-class storeXML(APIView):
+import requests
 
-    def __init__(self):
-        self.db_handle = get_db_handle()
+from .utils import getDBHandle
 
 
-    def parse_category(self, data):
+class UploadXML(APIView):
+
+    DBHandle = getDBHandle()
+
+    def parseCategory(self, data):
         if isinstance(data, list):
             result = []
             for item in data:
                 result.append(
                     {
-                        'reflink': item['Ссылка'],
+                        'categoryId': item['Ссылка'],
                         'name': item['Наименование'],
-                        'parent': item['Родитель']
+                        'parent': None if item['Родитель'] == item['Ссылка'] else item['Родитель'],
+                        'sent': 0
                     }
                 )
             return result
 
         return {
-            'reflink': data['Ссылка'],
+            'categoryId': data['Ссылка'],
             'name': data['Наименование'],
-            'parent': data['Родитель']
+            'parent': data['Родитель'],
+            'sent': 0
         }
 
 
-    def parse_measureunit(self, data):
+    def parseMeasureUnit(self, data):
         if isinstance(data, list):
             result = []
             for item in data:
                 result.append(
                     {
-                        'reflink': item['Строка']['Ссылка'],
+                        'measureUnitId': item['Строка']['Ссылка'],
                         'name': item['Строка']['Наименование'],
-                        'full_name': item['Строка']['НаименованиеПолное']
+                        'full_name': item['Строка']['НаименованиеПолное'],
+                        'sent': 0
                     }
                 )
             return result
 
         return {
-            'reflink': data['Строка']['Ссылка'],
+            'measureUnitId': data['Строка']['Ссылка'],
             'name': data['Строка']['Наименование'],
-            'full_name': data['Строка']['НаименованиеПолное']
+            'full_name': data['Строка']['НаименованиеПолное'],
+            'sent': 0
         }
 
 
-    def parse_product(self, data):
+    def parseProduct(self, data):
         if isinstance(data, list):
             result = []
             for item in data:
                 result.append(
                     {
-                        'reflink': item['Ссылка'],
+                        'productId': item['Ссылка'],
                         'category': item['Родитель'],
                         'code': item['Артикул'],
                         'name': item['Наименование'],
@@ -66,13 +73,14 @@ class storeXML(APIView):
                         'product_type': 0 if item['ТипНоменклатуры'] == 'Товар' else 1,
                         'rate_nds': int(re.sub('%', '', item['СтавкаНДС'])),
                         'measure_unit': item['ЕдиницаХраненияОстатков'],
-                        'hidden': int(item['ПометкаУдаления'])
+                        'hidden': int(item['ПометкаУдаления']),
+                        'sent': 0
                     }
                 )
             return result
 
         return {
-            'reflink': data['Ссылка'],
+            'productId': data['Ссылка'],
             'category': data['Родитель'],
             'code': data['Артикул'],
             'name': data['Наименование'],
@@ -80,20 +88,20 @@ class storeXML(APIView):
             'product_type': 0 if data['ТипНоменклатуры'] == 'Товар' else 1,
             'rate_nds': int(re.sub('%', '', data['СтавкаНДС'])),
             'measure_unit': data['ЕдиницаХраненияОстатков'],
-            'hidden': int(data['ПометкаУдаления'])
+            'hidden': int(data['ПометкаУдаления']),
+            'sent': 0
         }
 
 
-    def to_mongo(self, data, col):
-        col_handle = self.db_handle[col]
-        upd = {'$set': {'sent': 0}}
+    def toMongo(self, data, col):
+        colHandle = self.DBHandle[col]
 
         if isinstance(data, list):
-            col_handle.insert_many(data)
-            col_handle.update_many({}, upd, upsert=True)
-        else:
-            col_handle.insert_one(data)
-            col_handle.update_one({}, upd, upsert=True)
+            colHandle.insert_many(data)
+            return len(data)
+        
+        colHandle.insert_one(data)
+        return 1
 
 
     def post(self, request):
@@ -101,59 +109,63 @@ class storeXML(APIView):
         raw = xmltodict.parse(xml)
         body = raw['AgoraMessage']
 
+        result = {}
+
         if 'ГруппаНоменклатура' in body:
             data = body['ГруппаНоменклатура']
-            parsed = self.parse_category(data)
-            self.to_mongo(parsed, 'category')
+            parsed = self.parseCategory(data)
+            cnt = self.toMongo(parsed, 'categories')
+            result['categories received'] = cnt
 
         if 'ЕдиницыИзмерения' in body:
             data = body['ЕдиницыИзмерения']
-            parsed = self.parse_measureunit(data)
-            self.to_mongo(parsed, 'measure_unit')
+            parsed = self.parseMeasureUnit(data)
+            cnt = self.toMongo(parsed, 'measureunits')
+            result['measure units received'] = cnt
             
         if 'Номенклатура' in body:
             data = body['Номенклатура']
-            parsed = self.parse_product(data)
-            self.to_mongo(parsed, 'product')
+            parsed = self.parseProduct(data)
+            cnt = self.toMongo(parsed, 'products')
+            result['products received'] = cnt
 
-        return JsonResponse({'status': 'ok'})
-
-
-class loadToMP(APIView):
-
-    def __init__(self):
-        self.db_handle = get_db_handle()
+        return JsonResponse(result, status=status.HTTP_200_OK)
 
 
-    def to_mp(self, col):
-        col_handle = self.db_handle[col]
-        docs = col_handle.find({'sent': 0})
+class SendData(APIView):
 
-        # if len(list(docs)) == 0: return 'up-to-date'
+    DBHandle = getDBHandle()
+
+    def send(self, col):
+        colHandle = self.DBHandle[col]
+        docs = colHandle.find({'sent': 0})
+
+        # if len(list(docs)) == 0:
+        #     return {'status': 304}
 
         for item in docs:
-            r = requests.post(
-                f'http://127.0.0.1:8000/api/{col}/',
-                data=json_util.dumps(item)
+            response = requests.post(
+                f'http://127.0.0.1:3000/{col}/',
+                data = json_util.dumps(item),
+                headers = {'Content-Type': 'application/json'}
             )
-            if r.status_code != 200:
-                return 'failed'
+            if response.status_code != status.HTTP_200_OK:
+                return {'response': response.text, 'status': status.HTTP_400_BAD_REQUEST}
 
-            col_handle.update_one(
+            colHandle.update_one(
                 {'_id': item['_id']},
                 {'$set': {'sent': 1}}
             )
         
-        return 'ok'
+        return {'status': status.HTTP_200_OK}
 
 
     def get(self, request):
 
-        resp = {
-            'category': self.to_mp('category'),
-            'measure_unit': self.to_mp('measure_unit'),
-            'product': self.to_mp('product')
+        response = {
+            'category': self.send('categories'),
+            'measureunit': self.send('measureunits'),
+            'product': self.send('products')
         }
     
-        return JsonResponse(resp)
-
+        return JsonResponse(response)

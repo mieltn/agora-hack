@@ -10,7 +10,7 @@ import requests
 
 class Upload(APIView):
 
-    URL = 'http://0.0.0.0:2000'
+    URL = 'http://0.0.0.0:2000/senddata/'
 
     def get(self, request):
         response = requests.get(URL)
