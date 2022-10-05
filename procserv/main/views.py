@@ -142,6 +142,10 @@ class UploadXML(APIView):
 class SendData(APIView):
 
     DBHandle = getDBHandle()
+    # for localhost
+    # URL = 'http://0.0.0.0:3000/'
+    # for docker
+    URL = 'http://agora-hack-markeplace-1:3000/'
 
     def send(self, col):
         colHandle = self.DBHandle[col]
@@ -152,7 +156,7 @@ class SendData(APIView):
 
         for item in docs:
             response = requests.post(
-                'http://127.0.0.1:3000/{}/'.format(col),
+                self.URL + col + '/',
                 data = json_util.dumps(item),
                 headers = {'Content-Type': 'application/json'}
             )

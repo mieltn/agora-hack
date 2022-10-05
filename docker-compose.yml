@@ -1,0 +1,46 @@
+version: '3.9'
+
+services:
+  markeplace:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: marketplace
+    command: bash startmarketplace.sh
+    environment:
+      - POSTGRES_NAME=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - .:/app
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
+
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - 5432:5432
+    
+  procserv:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: procserv
+    command: python procserv/manage.py runserver 0.0.0.0:2000
+    volumes: 
+      - .:/app
+    ports:
+      - 2000:2000
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo
+    ports:
+      - 27017:27017

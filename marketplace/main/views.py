@@ -9,7 +9,10 @@ import requests
 
 class Upload(APIView):
 
-    URL = 'http://0.0.0.0:2000/senddata/'
+    # for localhost
+    # URL = 'http://0.0.0.0:2000/senddata/'
+    # for docker
+    URL = 'http://agora-hack-procserv-1:2000/senddata/'
 
     def get(self, request):
         response = requests.get(self.URL)
@@ -17,6 +20,7 @@ class Upload(APIView):
             response.json(),
             status = status.HTTP_200_OK
         )
+        
 
 class Products(APIView):
 

@@ -2,6 +2,7 @@ import pymongo
 
 
 def getDBHandle():
-    client = pymongo.MongoClient("mongodb://0.0.0.0:27017/")
+    # for localhost use 'localhost' instead of the name of the service from docker-compose.yml
+    client = pymongo.MongoClient("mongodb://mongo:27017/")
     DBHandle = client["erp"]
     return DBHandle
