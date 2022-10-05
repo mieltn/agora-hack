@@ -11,8 +11,8 @@ The project consists of 2 django projects:
 
 ## Functionality and testing
 
-- To test both services first a POST request to `http://0.0.0.0:2000/uploadxml/` with XML body from <i>testing</i> should be sent. Data will be converted to JSON and stored in MongoDB on processing server's side.
-- To test getting data from processing service a GET request should be send to the marketplace `http://0.0.0.0:3000/upload/`. Marketplace will ask processing service to send preproccessed data.
+- To test both services first a POST request to `http://0.0.0.0:2000/uploadxml/` with XML body from <i>testing</i> should be sent. Data will be converted to JSON and stored in MongoDB on the processing server's side.
+- To test getting data from processing service a GET request should be send to the marketplace `http://0.0.0.0:3000/upload/`. Marketplace will ask processing service to send preprocessed data.
 - After receiving the feedback you can enter Postgres on the marketplace's side to inspect uploaded data with SQL.
 - If you want to upload data once again it's better to clear MongoDB on the processing service's side and Postgres on the marketplace's side.
 - If testbigdata.xml will be used, be prepared to wait around 5 minutes until all new items will be written to the marketplace's database.
